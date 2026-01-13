@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Notification Service - SNS triggered Lambda for sending emails
+
+Resources:
+  NotificationServiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.javabuilder.SnsLambdaHandler::handleRequest
+      Runtime: java21
+      CodeUri: .
+      MemorySize: 512
+      Timeout: 30
+      Environment:
+        Variables:
+          BREVO_SECRET_NAME: notification-service/brevo
+          MAIL_SENDER_EMAIL: ducdev212@gmail.com
+          MAIL_SENDER_NAME: Blog Notification
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:notification-service/brevo*'
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties:
+            Topic: arn:aws:sns:ap-southeast-1:654512229990:notification
+
+Outputs:
+  NotificationServiceFunction:
+    Description: Notification Lambda Function ARN
+    Value: !GetAtt NotificationServiceFunction.Arn

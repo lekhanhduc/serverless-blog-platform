@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Post Service for Serverless Blog
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: java21
+
+Resources:
+  PostServiceApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowHeaders:
+          - "*"
+        AllowMethods:
+          - "*"
+
+  PostServiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: post-service
+      CodeUri: .
+      Handler: com.javabuilder.StreamLambdaHandler::handleRequest
+      Environment:
+        Variables:
+          ENVIRONMENT: prod
+          DYNAMODB_TABLE_NAME: serverless-blog
+          SNS_TOPIC_ARN: arn:aws:sns:ap-southeast-1:654512229990:notification
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: serverless-blog
+        - SNSPublishMessagePolicy:
+            TopicName: notification
+      Events:
+        GetPosts:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PostServiceApi
+            Path: /posts
+            Method: GET
+        GetPost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PostServiceApi
+            Path: /posts/{postId}
+            Method: GET
+        CreatePost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PostServiceApi
+            Path: /posts
+            Method: POST
+        UpdatePost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PostServiceApi
+            Path: /posts/{postId}
+            Method: PUT
+        DeletePost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PostServiceApi
+            Path: /posts/{postId}
+            Method: DELETE
+        GetMyPosts:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PostServiceApi
+            Path: /posts/me
+            Method: GET
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${PostServiceApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  
+  PostServiceFunctionArn:
+    Description: "Post Service Lambda Function ARN"
+    Value: !GetAtt PostServiceFunction.Arn

@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Spring Boot 3 API - com.javabuilder::profile-service
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+
+Resources:
+  ProfileServiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.javabuilder.StreamLambdaHandler::handleRequest
+      Runtime: java21
+      CodeUri: .
+      MemorySize: 2048
+      Timeout: 30
+      SnapStart:
+        ApplyOn: PublishedVersions
+      AutoPublishAlias: live
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: serverless-blog
+          COGNITO_USER_POOL_ID: ap-southeast-1_jMBPJWN1Z
+          COGNITO_CLIENT_ID: 5b8le403j2lhb2mgdsi99c79mj
+          SNS_TOPIC_ARN: arn:aws:sns:ap-southeast-1:654512229990:notification
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: serverless-blog
+        - SNSPublishMessagePolicy:
+            TopicName: notification
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:*
+              Resource: "*"
+      Events:
+        ProxyResource:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+
+Outputs:
+  ProfileServiceApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/ping'
+    Export:
+      Name: ProfileServiceApi

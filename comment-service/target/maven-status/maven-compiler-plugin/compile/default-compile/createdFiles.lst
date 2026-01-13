@@ -1,0 +1,13 @@
+com\javabuilder\dto\UpdateCommentRequest.class
+com\javabuilder\dto\CreateCommentRequest.class
+com\javabuilder\configuration\SnsClientConfiguration.class
+com\javabuilder\repository\ProfileRepository.class
+com\javabuilder\controller\CommentController.class
+com\javabuilder\exception\GlobalExceptionHandler.class
+com\javabuilder\exception\ResourceNotFoundException.class
+com\javabuilder\configuration\CustomJwtDecoder.class
+com\javabuilder\configuration\SecurityConfiguration.class
+com\javabuilder\service\CommentService.class
+com\javabuilder\StreamLambdaHandler.class
+com\javabuilder\Application.class
+com\javabuilder\repository\CommentRepository.class

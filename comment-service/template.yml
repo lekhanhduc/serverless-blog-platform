@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Spring Boot 2 API - com.javabuilder::comment-service
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+
+Resources:
+  CommentServiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: com.javabuilder.StreamLambdaHandler::handleRequest
+      Runtime: java21
+      CodeUri: .
+      MemorySize: 2048
+      Timeout: 30
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: serverless-blog
+          SNS_TOPIC_ARN: arn:aws:sns:ap-southeast-1:654512229990:notification
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: serverless-blog
+        - SNSPublishMessagePolicy:
+            TopicName: notification
+      Events:
+        ProxyResource:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+
+Outputs:
+  CommentServiceApi:
+    Description: URL for application
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/ping'
+    Export:
+      Name: CommentServiceApi

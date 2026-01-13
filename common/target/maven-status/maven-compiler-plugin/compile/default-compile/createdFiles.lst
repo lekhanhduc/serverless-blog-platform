@@ -1,0 +1,15 @@
+com\javabuilder\dto\PageResponse$PageResponseBuilder.class
+com\javabuilder\configuration\DynamoDbConfiguration.class
+com\javabuilder\dto\ApiResponse$ApiResponseBuilder.class
+com\javabuilder\entity\Post$PostBuilder.class
+com\javabuilder\service\SnsPublisher.class
+com\javabuilder\event\NotificationEvent$NotificationEventBuilder.class
+com\javabuilder\entity\Profile.class
+com\javabuilder\event\NotificationEvent.class
+com\javabuilder\entity\Profile$ProfileBuilder.class
+com\javabuilder\repository\DynamoDbRepository.class
+com\javabuilder\dto\PageResponse.class
+com\javabuilder\entity\Comment$CommentBuilder.class
+com\javabuilder\entity\Comment.class
+com\javabuilder\dto\ApiResponse.class
+com\javabuilder\entity\Post.class
