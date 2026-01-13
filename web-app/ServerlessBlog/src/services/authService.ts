@@ -1,4 +1,6 @@
-import { signIn, signOut, getCurrentUser, fetchAuthSession, confirmSignIn, signUp, confirmSignUp } from 'aws-amplify/auth';
+import { signIn, signOut, getCurrentUser, fetchAuthSession, confirmSignIn } from 'aws-amplify/auth';
+
+const API_BASE_URL = 'https://serverless.javabuilder.online';
 
 export const authService = {
     async checkUser() {
@@ -32,21 +34,18 @@ export const authService = {
         });
     },
 
-    async register(email: string, pass: string, name: string) {
-        return await signUp({
-            username: email,
-            password: pass,
-            options: {
-                userAttributes: { name }
-            }
+    async register(email: string, pass: string, username: string) {
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: pass, username })
         });
-    },
-
-    async confirmRegistration(email: string, code: string) {
-        return await confirmSignUp({
-            username: email,
-            confirmationCode: code
-        });
+        
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'Đăng ký thất bại');
+        }
+        return data;
     },
 
     async logout() {

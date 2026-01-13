@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { MainLayout } from './components/layout/MainLayout';
 import { LoginPage } from './pages/LoginPage';
@@ -9,6 +9,7 @@ import { PostsPage } from './pages/PostsPage';
 import { PostDetailPage } from './pages/PostDetailPage';
 import { CreatePostPage } from './pages/CreatePostPage';
 import { EditPostPage } from './pages/EditPostPage';
+import { ProfilePage } from './pages/ProfilePage';
 import './index.css';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
           <Route path="/posts/:postId/edit" element={<MainLayout><EditPostPage /></MainLayout>} />
           <Route path="/posts/:postId" element={<MainLayout><PostDetailPage /></MainLayout>} />
           <Route path="/dashboard" element={<MainLayout><DashboardPage /></MainLayout>} />
+          <Route path="/profile" element={<MainLayout><ProfilePage /></MainLayout>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

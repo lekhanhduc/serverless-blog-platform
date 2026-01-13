@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HiOutlineHeart, HiOutlineChat } from 'react-icons/hi';
 import { postApi } from '../services/api';
 import type { Post } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -21,9 +20,7 @@ export const HomePage: React.FC = () => {
     };
 
     const timeAgo = (date: string) => {
-        const now = new Date();
-        const d = new Date(date);
-        const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
+        const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
         if (diff < 60) return 'Vừa xong';
         if (diff < 3600) return `${Math.floor(diff / 60)} phút`;
         if (diff < 86400) return `${Math.floor(diff / 3600)} giờ`;
@@ -32,71 +29,83 @@ export const HomePage: React.FC = () => {
     };
 
     return (
-        <div className="bg-white min-h-screen">
+        <div>
             {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 z-10 max-w-2xl mx-auto">
-                <h1 className="text-xl font-bold text-gray-900">Trang chủ</h1>
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">Trang chủ</h1>
+                <p className="text-gray-500 mt-1">Bài viết mới nhất từ cộng đồng</p>
             </div>
 
-            <div className="max-w-2xl mx-auto">
-                {/* Loading */}
-                {loading && (
-                    <div className="flex justify-center py-12">
-                        <div className="w-8 h-8 border-3 border-gray-200 border-t-primary rounded-full animate-spin" />
-                    </div>
-                )}
+            {/* Loading */}
+            {loading && (
+                <div className="flex justify-center py-16">
+                    <div className="w-8 h-8 border-2 border-gray-200 border-t-primary rounded-full animate-spin" />
+                </div>
+            )}
 
-                {/* Empty */}
-                {!loading && posts.length === 0 && (
-                    <div className="text-center py-16 px-4">
-                        <p className="text-gray-500">Chưa có bài viết nào</p>
-                    </div>
-                )}
+            {/* Empty */}
+            {!loading && posts.length === 0 && (
+                <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
+                    <div className="text-5xl mb-4">📝</div>
+                    <p className="text-gray-500 mb-4">Chưa có bài viết nào</p>
+                    {user && (
+                        <button 
+                            onClick={() => navigate('/posts/create')}
+                            className="px-5 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
+                        >
+                            Viết bài đầu tiên
+                        </button>
+                    )}
+                </div>
+            )}
 
-                {/* Posts */}
-                <div className="divide-y divide-gray-100">
-                    {!loading && posts.map((post) => (
+            {/* Posts */}
+            {!loading && posts.length > 0 && (
+                <div className="space-y-4">
+                    {posts.map((post, index) => (
                         <article 
                             key={post.pk} 
-                            className="px-5 py-4 cursor-pointer hover:bg-blue-50/50 transition-colors"
+                            className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all animate-fadeIn"
+                            style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
                             onClick={() => navigate(`/posts/${extractPostId(post.pk)}`)}
                         >
-                            <div className="flex gap-3">
+                            <div className="flex gap-4">
                                 {/* Avatar */}
-                                <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold shrink-0 text-sm">
-                                    {post.authorName[0]}
+                                <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold shrink-0">
+                                    {post.authorName[0].toUpperCase()}
                                 </div>
 
                                 {/* Content */}
                                 <div className="flex-1 min-w-0">
-                                    {/* Header */}
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-semibold text-[15px] text-gray-900">{post.authorName}</span>
-                                        <span className="text-gray-400 text-sm">· {timeAgo(post.createdAt)}</span>
+                                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                                        <span className="font-medium text-gray-900">{post.authorName}</span>
+                                        <span>·</span>
+                                        <span>{timeAgo(post.createdAt)}</span>
                                     </div>
 
-                                    <h2 className="font-semibold text-[15px] text-primary mb-1.5">{post.title}</h2>
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
+                                        {post.title}
+                                    </h2>
 
-                                    {/* Preview - max 3 lines */}
-                                    <p className="text-[15px] text-gray-600 line-clamp-3 leading-relaxed">
+                                    <p className="text-gray-500 text-sm line-clamp-2">
                                         {stripMarkdown(post.content)}
                                     </p>
 
-                                    {/* Actions */}
-                                    <div className="flex items-center gap-6 mt-3">
-                                        <button className="flex items-center gap-1.5 text-gray-400 hover:text-primary transition-colors">
-                                            <HiOutlineChat className="w-5 h-5" />
-                                        </button>
-                                        <button className="flex items-center gap-1.5 text-gray-400 hover:text-red-500 transition-colors">
-                                            <HiOutlineHeart className="w-5 h-5" />
-                                        </button>
+                                    {/* Footer */}
+                                    <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
+                                        <span className="flex items-center gap-1">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            5 phút đọc
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         </article>
                     ))}
                 </div>
-            </div>
+            )}
         </div>
     );
 };

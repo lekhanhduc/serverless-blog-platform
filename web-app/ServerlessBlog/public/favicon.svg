@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#FF9900"/>
+  <!-- Blog/Document icon -->
+  <path d="M20 16h24c2.2 0 4 1.8 4 4v24c0 2.2-1.8 4-4 4H20c-2.2 0-4-1.8-4-4V20c0-2.2 1.8-4 4-4z" fill="white"/>
+  <!-- Lines representing text -->
+  <rect x="22" y="22" width="16" height="3" rx="1.5" fill="#FF9900"/>
+  <rect x="22" y="28" width="20" height="2" rx="1" fill="#232F3E"/>
+  <rect x="22" y="33" width="18" height="2" rx="1" fill="#232F3E"/>
+  <rect x="22" y="38" width="14" height="2" rx="1" fill="#232F3E"/>
+  <!-- Lambda symbol (serverless) -->
+  <path d="M38 42l4-8h3l-5.5 11h-3l-2.5-5h2.5l1.5 2z" fill="#FF9900"/>
+</svg>

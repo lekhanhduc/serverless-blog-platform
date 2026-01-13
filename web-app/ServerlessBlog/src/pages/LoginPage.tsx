@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
                 await refreshUser();
                 navigate('/');
             }
-        } catch { setError('Thông tin đăng nhập không chính xác'); }
+        } catch { setError('Email hoặc mật khẩu không đúng'); }
         finally { setLoading(false); }
     };
 
@@ -40,68 +40,99 @@ export const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 bg-white">
+        <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
             <div className="w-full max-w-sm">
-                <h1 className="text-3xl font-bold text-center mb-2">AWS Serverless</h1>
-                <p className="text-gray-500 text-center mb-8">Đăng nhập để tiếp tục</p>
+                <div className="bg-white rounded-2xl border border-gray-200 p-8">
+                    {/* Logo */}
+                    <div className="flex justify-center mb-6">
+                        <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                        </div>
+                    </div>
 
-                {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+                    <h1 className="text-xl font-bold text-center text-gray-900 mb-1">
+                        {mode === 'LOGIN' ? 'Đăng nhập' : 'Hoàn tất đăng ký'}
+                    </h1>
+                    <p className="text-gray-500 text-center text-sm mb-6">
+                        {mode === 'LOGIN' ? 'Chào mừng bạn quay lại' : 'Thiết lập thông tin tài khoản'}
+                    </p>
 
-                {mode === 'LOGIN' ? (
-                    <form onSubmit={handleSignIn} className="space-y-3">
-                        <input
-                            type="text"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Email hoặc username"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[15px] focus:outline-none focus:border-gray-900"
-                            required
-                        />
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Mật khẩu"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[15px] focus:outline-none focus:border-gray-900"
-                            required
-                        />
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold disabled:opacity-50"
-                        >
-                            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-                        </button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleChallenge} className="space-y-3">
-                        <input
-                            type="text"
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            placeholder="Tên hiển thị"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[15px] focus:outline-none focus:border-gray-900"
-                            required
-                        />
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Mật khẩu mới"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl text-[15px] focus:outline-none focus:border-gray-900"
-                            required
-                        />
-                        <button type="submit" disabled={loading} className="w-full py-3 bg-gray-900 text-white rounded-xl font-semibold disabled:opacity-50">
-                            {loading ? 'Đang xử lý...' : 'Hoàn tất'}
-                        </button>
-                    </form>
-                )}
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
+                            <p className="text-red-600 text-sm text-center">{error}</p>
+                        </div>
+                    )}
+
+                    {mode === 'LOGIN' ? (
+                        <form onSubmit={handleSignIn} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input
+                                    type="text"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="you@example.com"
+                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-primary focus:outline-none"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-primary focus:outline-none"
+                                    required
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full py-2.5 bg-primary text-white font-medium rounded-lg disabled:opacity-50 hover:bg-primary-dark transition-colors cursor-pointer"
+                            >
+                                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                            </button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleChallenge} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Tên hiển thị</label>
+                                <input
+                                    type="text"
+                                    value={displayName}
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    placeholder="Tên của bạn"
+                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-primary focus:outline-none"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:border-primary focus:outline-none"
+                                    required
+                                />
+                            </div>
+                            <button type="submit" disabled={loading} className="w-full py-2.5 bg-primary text-white font-medium rounded-lg disabled:opacity-50 hover:bg-primary-dark transition-colors cursor-pointer">
+                                {loading ? 'Đang xử lý...' : 'Hoàn tất'}
+                            </button>
+                        </form>
+                    )}
+                </div>
 
                 <p className="text-center text-sm text-gray-500 mt-6">
-                    Chưa có tài khoản? <Link to="/register" className="text-gray-900 font-semibold">Đăng ký</Link>
+                    Chưa có tài khoản? <Link to="/register" className="text-primary font-medium hover:underline">Đăng ký</Link>
                 </p>
-                <p className="text-center mt-4">
-                    <Link to="/" className="text-sm text-gray-500 hover:text-gray-900">← Về trang chủ</Link>
+                <p className="text-center mt-3">
+                    <Link to="/" className="text-sm text-gray-400 hover:text-gray-600">← Về trang chủ</Link>
                 </p>
             </div>
         </div>

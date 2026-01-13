@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { HiOutlineArrowLeft, HiOutlineHeart, HiOutlineTrash } from 'react-icons/hi';
 import ReactMarkdown from 'react-markdown';
 import { postApi, commentApi } from '../services/api';
 import type { Post, Comment } from '../types';
@@ -12,6 +11,7 @@ export const PostDetailPage: React.FC = () => {
     const [post, setPost] = useState<Post | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [commentsLoading, setCommentsLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const { user } = useAuth();
@@ -23,9 +23,13 @@ export const PostDetailPage: React.FC = () => {
         try { const r = await postApi.getById(postId!); setPost(r.data); }
         catch { } finally { setLoading(false); }
     };
+
     const loadComments = async () => {
-        try { const r = await commentApi.getByPost(postId!); setComments(r.data.result); } catch { }
+        setCommentsLoading(true);
+        try { const r = await commentApi.getByPost(postId!); setComments(r.data.result); } 
+        catch { } finally { setCommentsLoading(false); }
     };
+
     const submitComment = async () => {
         if (!newComment.trim() || !post) return;
         setSubmitting(true);
@@ -42,7 +46,9 @@ export const PostDetailPage: React.FC = () => {
         }
         catch { } finally { setSubmitting(false); }
     };
+
     const deleteComment = async (sk: string) => {
+        if (!confirm('Xóa bình luận này?')) return;
         try { await commentApi.delete(postId!, sk.replace('COMMENT#', '')); loadComments(); } catch { }
     };
 
@@ -54,102 +60,125 @@ export const PostDetailPage: React.FC = () => {
         return formatDate(date);
     };
 
-    if (loading) return <div className="flex justify-center py-12"><div className="w-8 h-8 border-3 border-gray-200 border-t-primary rounded-full animate-spin" /></div>;
-    if (!post) return <div className="text-center py-16"><p className="text-gray-500">Không tìm thấy</p></div>;
+    if (loading) {
+        return (
+            <div className="flex justify-center py-16">
+                <div className="w-8 h-8 border-2 border-gray-200 border-t-primary rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    if (!post) {
+        return (
+            <div className="text-center py-16">
+                <p className="text-gray-500 mb-4">Không tìm thấy bài viết</p>
+                <button onClick={() => navigate('/')} className="text-primary font-medium">Về trang chủ</button>
+            </div>
+        );
+    }
 
     return (
-        <div className="bg-white min-h-screen">
-            {/* Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-10 max-w-2xl mx-auto flex items-center gap-4">
-                <button onClick={() => navigate(-1)} className="p-2 -ml-2 hover:bg-gray-100 rounded-full">
-                    <HiOutlineArrowLeft className="w-5 h-5" />
-                </button>
-                <span className="font-bold text-lg">Bài viết</span>
-            </div>
+        <div>
+            {/* Back */}
+            <button 
+                onClick={() => navigate(-1)} 
+                className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors cursor-pointer"
+            >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                </svg>
+                Quay lại
+            </button>
 
-            <div className="max-w-2xl mx-auto">
-                {/* Post */}
-                <article className="px-4 py-4 border-b border-gray-200">
-                    <div className="flex gap-3 mb-3">
-                        <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {post.authorName[0]}
-                        </div>
-                        <div>
-                            <p className="font-semibold text-[15px]">{post.authorName}</p>
-                            <p className="text-gray-400 text-sm">{formatDate(post.createdAt, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                        </div>
+            {/* Post */}
+            <article className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                        {post.authorName[0].toUpperCase()}
                     </div>
-                    <h1 className="text-xl font-bold mb-3 text-primary">{post.title}</h1>
-                    <div className="prose text-[15px]">
-                        <ReactMarkdown>{post.content}</ReactMarkdown>
+                    <div>
+                        <p className="font-medium text-gray-900">{post.authorName}</p>
+                        <p className="text-sm text-gray-500">{formatDate(post.createdAt, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
-                    <div className="flex items-center gap-6 mt-4 pt-3 border-t border-gray-100">
-                        <button className="flex items-center gap-1.5 text-gray-400 hover:text-red-500">
-                            <HiOutlineHeart className="w-5 h-5" />
-                        </button>
-                        <span className="text-gray-400 text-sm">{comments.length} bình luận</span>
-                    </div>
-                </article>
+                </div>
 
-                {/* Comment Input */}
-                {user && (
-                    <div className="px-4 py-3 border-b border-gray-200 flex gap-3">
-                        <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0">
-                            {user.name?.[0] || 'U'}
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">{post.title}</h1>
+
+                <div className="prose">
+                    <ReactMarkdown>{post.content}</ReactMarkdown>
+                </div>
+            </article>
+
+            {/* Comments */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h2 className="font-semibold text-gray-900 mb-4">Bình luận ({comments.length})</h2>
+
+                {/* Input */}
+                {user ? (
+                    <div className="flex gap-3 mb-6">
+                        <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
+                            {user.name?.[0]?.toUpperCase() || 'U'}
                         </div>
                         <div className="flex-1">
                             <textarea
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 placeholder="Viết bình luận..."
-                                rows={2}
-                                className="w-full resize-none text-[15px] outline-none placeholder:text-gray-400"
+                                rows={3}
+                                className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm resize-none focus:border-primary focus:outline-none"
                             />
-                            <div className="flex justify-end">
+                            <div className="flex justify-end mt-2">
                                 <button
                                     onClick={submitComment}
                                     disabled={submitting || !newComment.trim()}
-                                    className="px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-full disabled:opacity-40 hover:bg-primary-dark transition-colors"
+                                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg disabled:opacity-50 hover:bg-primary-dark transition-colors cursor-pointer"
                                 >
-                                    {submitting ? '...' : 'Đăng'}
+                                    {submitting ? 'Đang gửi...' : 'Gửi'}
                                 </button>
                             </div>
                         </div>
                     </div>
-                )}
-
-                {!user && (
-                    <div className="px-4 py-4 border-b border-gray-200 text-center">
-                        <button onClick={() => navigate('/login')} className="text-primary font-semibold">Đăng nhập</button>
+                ) : (
+                    <div className="text-center py-4 bg-gray-50 rounded-lg mb-6">
+                        <button onClick={() => navigate('/login')} className="text-primary font-medium">Đăng nhập</button>
                         <span className="text-gray-500"> để bình luận</span>
                     </div>
                 )}
 
-                {/* Comments */}
-                <div className="divide-y divide-gray-100">
-                    {comments.map((c) => (
-                        <div key={c.sk} className="px-4 py-3 flex gap-3">
-                            <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-sm font-semibold shrink-0">
-                                {c.authorName[0]}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sm">{c.authorName}</span>
-                                    <span className="text-gray-400 text-xs">{timeAgo(c.createdAt)}</span>
-                                    {user?.username === c.authorId && (
-                                        <button onClick={() => deleteComment(c.sk)} className="ml-auto text-gray-400 hover:text-red-500">
-                                            <HiOutlineTrash className="w-4 h-4" />
-                                        </button>
-                                    )}
+                {/* List */}
+                {commentsLoading ? (
+                    <div className="flex justify-center py-8">
+                        <div className="w-6 h-6 border-2 border-gray-200 border-t-primary rounded-full animate-spin" />
+                    </div>
+                ) : comments.length === 0 ? (
+                    <p className="text-center text-gray-400 text-sm py-4">Chưa có bình luận</p>
+                ) : (
+                    <div className="space-y-3">
+                        {comments.map((c) => (
+                            <div key={c.sk} className="group flex gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
+                                    {c.authorName[0].toUpperCase()}
                                 </div>
-                                <p className="text-[15px] mt-0.5">{c.content}</p>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium text-sm text-gray-900">{c.authorName}</span>
+                                        <span className="text-xs text-gray-400">{timeAgo(c.createdAt)}</span>
+                                        {user?.username === c.authorId && (
+                                            <button 
+                                                onClick={() => deleteComment(c.sk)} 
+                                                className="ml-auto text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-gray-700 mt-1">{c.content}</p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-
-                {comments.length === 0 && (
-                    <div className="text-center py-8 text-gray-400 text-sm">Chưa có bình luận</div>
+                        ))}
+                    </div>
                 )}
             </div>
         </div>

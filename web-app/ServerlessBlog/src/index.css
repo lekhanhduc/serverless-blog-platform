@@ -1,41 +1,62 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-light: #3b82f6;
-  --color-accent: #f59e0b;
+  --color-primary: #ff9900;
+  --color-primary-dark: #ec7211;
+  --color-primary-light: #ffac31;
   --color-success: #10b981;
   --color-error: #ef4444;
+  --color-warning: #f59e0b;
   
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #232f3e;
   
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  background: #f9fafb;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
-.prose h2 { font-size: 1.25rem; font-weight: 600; color: #111827; margin: 1.5rem 0 0.75rem; }
-.prose h3 { font-size: 1.1rem; font-weight: 600; color: #111827; margin: 1.25rem 0 0.5rem; }
-.prose p { line-height: 1.7; margin-bottom: 1rem; color: #374151; }
-.prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-.prose li { line-height: 1.7; margin-bottom: 0.25rem; color: #374151; }
-.prose code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 0.875em; color: #2563eb; }
-.prose pre { background: #1f2937; color: #f3f4f6; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+/* Prose styles */
+.prose { font-size: 1rem; line-height: 1.8; color: #334155; }
+.prose h1 { font-size: 1.875rem; font-weight: 700; color: #0f172a; margin: 2rem 0 1rem; }
+.prose h2 { font-size: 1.5rem; font-weight: 600; color: #0f172a; margin: 1.75rem 0 0.75rem; }
+.prose h3 { font-size: 1.25rem; font-weight: 600; color: #0f172a; margin: 1.5rem 0 0.5rem; }
+.prose p { margin-bottom: 1.25rem; }
+.prose ul, .prose ol { padding-left: 1.5rem; margin-bottom: 1.25rem; }
+.prose li { margin-bottom: 0.5rem; }
+.prose code { background: #f1f5f9; padding: 0.125rem 0.5rem; border-radius: 0.375rem; font-size: 0.875em; color: #4f46e5; }
+.prose pre { background: #1e293b; color: #f1f5f9; padding: 1.5rem; border-radius: 0.75rem; overflow-x: auto; margin: 1.5rem 0; }
 .prose pre code { background: none; padding: 0; color: inherit; }
-.prose blockquote { border-left: 3px solid #2563eb; padding-left: 1rem; margin: 1rem 0; color: #6b7280; }
-.prose a { color: #2563eb; }
+.prose blockquote { border-left: 3px solid #4f46e5; padding-left: 1rem; margin: 1.5rem 0; color: #64748b; }
+.prose a { color: #4f46e5; text-decoration: none; }
+.prose a:hover { text-decoration: underline; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }

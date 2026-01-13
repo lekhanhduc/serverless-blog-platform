@@ -1,4 +1,3 @@
-// AWS Brand Colors
 export const AWS_COLORS = {
     squidInk: '#232f3e',
     orange: '#ff9900',

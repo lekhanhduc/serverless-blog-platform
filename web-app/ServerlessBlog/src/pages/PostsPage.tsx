@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HiOutlineHeart, HiOutlineChat } from 'react-icons/hi';
 import { postApi } from '../services/api';
 import type { Post } from '../types';
 import { stripMarkdown, formatDate, extractPostId } from '../utils/helpers';
@@ -8,6 +7,7 @@ import { stripMarkdown, formatDate, extractPostId } from '../utils/helpers';
 export const PostsPage: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => { loadPosts(); }, []);
@@ -19,69 +19,82 @@ export const PostsPage: React.FC = () => {
     };
 
     const timeAgo = (date: string) => {
-        const now = new Date();
-        const d = new Date(date);
-        const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
+        const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
         if (diff < 60) return 'Vừa xong';
         if (diff < 3600) return `${Math.floor(diff / 60)} phút`;
         if (diff < 86400) return `${Math.floor(diff / 3600)} giờ`;
-        if (diff < 604800) return `${Math.floor(diff / 86400)} ngày`;
         return formatDate(date);
     };
 
+    const filtered = posts.filter(p => 
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
+        p.authorName.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
-        <div className="bg-white min-h-screen">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 z-10 max-w-2xl mx-auto">
-                <h1 className="text-xl font-bold text-gray-900">Khám phá</h1>
+        <div>
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold text-gray-900">Khám phá</h1>
+                <p className="text-gray-500 mt-1">Tìm kiếm và khám phá bài viết</p>
             </div>
 
-            <div className="max-w-2xl mx-auto">
-                {loading && (
-                    <div className="flex justify-center py-12">
-                        <div className="w-8 h-8 border-3 border-gray-200 border-t-primary rounded-full animate-spin" />
-                    </div>
-                )}
+            {/* Search */}
+            <div className="relative mb-6">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Tìm kiếm bài viết..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
+                />
+            </div>
 
-                {!loading && posts.length === 0 && (
-                    <div className="text-center py-16 px-4">
-                        <p className="text-gray-500">Chưa có bài viết nào</p>
-                    </div>
-                )}
+            {/* Loading */}
+            {loading && (
+                <div className="flex justify-center py-16">
+                    <div className="w-8 h-8 border-2 border-gray-200 border-t-primary rounded-full animate-spin" />
+                </div>
+            )}
 
-                <div className="divide-y divide-gray-100">
-                    {!loading && posts.map((post) => (
+            {/* Empty */}
+            {!loading && filtered.length === 0 && (
+                <div className="text-center py-16">
+                    <p className="text-gray-500">{search ? 'Không tìm thấy bài viết' : 'Chưa có bài viết nào'}</p>
+                </div>
+            )}
+
+            {/* Posts Grid */}
+            {!loading && filtered.length > 0 && (
+                <div className="grid gap-4 md:grid-cols-2">
+                    {filtered.map((post, index) => (
                         <article 
                             key={post.pk} 
-                            className="px-5 py-4 cursor-pointer hover:bg-blue-50/50 transition-colors"
+                            className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all animate-fadeIn"
+                            style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
                             onClick={() => navigate(`/posts/${extractPostId(post.pk)}`)}
                         >
-                            <div className="flex gap-3">
-                                <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold shrink-0 text-sm">
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                                <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium">
                                     {post.authorName[0]}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="font-semibold text-[15px] text-gray-900">{post.authorName}</span>
-                                        <span className="text-gray-400 text-sm">· {timeAgo(post.createdAt)}</span>
-                                    </div>
-                                    <h2 className="font-semibold text-[15px] text-primary mb-1.5">{post.title}</h2>
-                                    <p className="text-[15px] text-gray-600 line-clamp-2 leading-relaxed">
-                                        {stripMarkdown(post.content)}
-                                    </p>
-                                    <div className="flex items-center gap-6 mt-3">
-                                        <button className="flex items-center gap-1.5 text-gray-400 hover:text-primary transition-colors">
-                                            <HiOutlineChat className="w-5 h-5" />
-                                        </button>
-                                        <button className="flex items-center gap-1.5 text-gray-400 hover:text-red-500 transition-colors">
-                                            <HiOutlineHeart className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
+                                <span className="font-medium text-gray-700">{post.authorName}</span>
+                                <span>·</span>
+                                <span>{timeAgo(post.createdAt)}</span>
                             </div>
+                            <h2 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary transition-colors">
+                                {post.title}
+                            </h2>
+                            <p className="text-gray-500 text-sm line-clamp-2">
+                                {stripMarkdown(post.content)}
+                            </p>
                         </article>
                     ))}
                 </div>
-            </div>
+            )}
         </div>
     );
 };
