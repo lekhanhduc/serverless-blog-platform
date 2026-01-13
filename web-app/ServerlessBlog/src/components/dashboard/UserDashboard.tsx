@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { postApi } from '../../services/api';
 import type { Post } from '../../types';
 import { formatDate, extractPostId, stripMarkdown } from '../../utils/helpers';
+import { Modal } from '../Modal';
 
 interface Props {
     user: any;
@@ -13,6 +14,8 @@ export const UserDashboard: React.FC<Props> = ({ }) => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [menuOpen, setMenuOpen] = useState<string | null>(null);
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+    const [deleting, setDeleting] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => { loadPosts(); }, []);
@@ -22,9 +25,14 @@ export const UserDashboard: React.FC<Props> = ({ }) => {
         catch { } finally { setLoading(false); }
     };
 
-    const deletePost = async (id: string) => {
-        if (!confirm('Xóa bài viết này?')) return;
-        try { await postApi.delete(id); loadPosts(); } catch { }
+    const deletePost = async () => {
+        if (!deleteModal.id) return;
+        setDeleting(true);
+        try { await postApi.delete(deleteModal.id); loadPosts(); } 
+        catch { } finally { 
+            setDeleting(false);
+            setDeleteModal({ open: false, id: null });
+        }
     };
 
     const timeAgo = (date: string) => {
@@ -114,7 +122,7 @@ export const UserDashboard: React.FC<Props> = ({ }) => {
                                                     Sửa
                                                 </button>
                                                 <button
-                                                    onClick={() => { deletePost(extractPostId(post.pk)); setMenuOpen(null); }}
+                                                    onClick={() => { setDeleteModal({ open: true, id: extractPostId(post.pk) }); setMenuOpen(null); }}
                                                     className="w-full px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50 flex items-center gap-2"
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,6 +139,16 @@ export const UserDashboard: React.FC<Props> = ({ }) => {
                     ))}
                 </div>
             )}
+
+            <Modal
+                isOpen={deleteModal.open}
+                onClose={() => setDeleteModal({ open: false, id: null })}
+                onConfirm={deletePost}
+                title="Xóa bài viết"
+                message="Bạn có chắc muốn xóa bài viết này? Hành động này không thể hoàn tác."
+                confirmText="Xóa"
+                loading={deleting}
+            />
         </div>
     );
 };

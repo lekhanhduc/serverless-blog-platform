@@ -20,6 +20,7 @@ public class Comment {
     private String content;
     private String authorId;
     private String authorName;
+    private String authorAvatar;
     private Instant createdAt;
     private Instant updatedAt;
 

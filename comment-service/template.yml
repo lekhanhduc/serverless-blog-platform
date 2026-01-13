@@ -14,6 +14,9 @@ Resources:
       CodeUri: .
       MemorySize: 2048
       Timeout: 30
+      SnapStart:
+        ApplyOn: PublishedVersions
+      AutoPublishAlias: live
       Environment:
         Variables:
           DYNAMODB_TABLE_NAME: serverless-blog

@@ -4,14 +4,18 @@ import com.javabuilder.dto.ApiResponse;
 import com.javabuilder.dto.CreatePostRequest;
 import com.javabuilder.dto.PageResponse;
 import com.javabuilder.dto.UpdatePostRequest;
+import com.javabuilder.dto.UploadUrlRequest;
+import com.javabuilder.dto.UploadUrlResponse;
 import com.javabuilder.entity.Post;
 import com.javabuilder.service.PostService;
+import com.javabuilder.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/posts")
@@ -19,6 +23,19 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final S3Service s3Service;
+
+    @PostMapping("/upload-url")
+    public ApiResponse<UploadUrlResponse> getUploadUrl(
+            @RequestBody UploadUrlRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        String postId = UUID.randomUUID().toString();
+        UploadUrlResponse result = s3Service.generatePostUploadUrl(postId, request.getContentType());
+        return ApiResponse.<UploadUrlResponse>builder()
+                .code(200)
+                .data(result)
+                .build();
+    }
 
     @PostMapping
     public ApiResponse<Post> createPost(@RequestBody CreatePostRequest request,

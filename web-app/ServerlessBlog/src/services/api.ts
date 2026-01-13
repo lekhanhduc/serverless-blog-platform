@@ -58,6 +58,38 @@ export const postApi = {
         if (nextToken) params.append('nextToken', nextToken);
         return request<ApiResponse<PageResponse<Post>>>(`/posts/me?${params}`);
     },
+    getUploadUrl: (contentType: string) => request<ApiResponse<{ uploadUrl: string; fileUrl: string; key: string }>>('/posts/upload-url', {
+        method: 'POST',
+        body: JSON.stringify({ contentType }),
+    }),
+};
+
+export const userApi = {
+    getUploadUrl: (contentType: string) => request<ApiResponse<{ uploadUrl: string; fileUrl: string; key: string }>>('/users/upload-url', {
+        method: 'POST',
+        body: JSON.stringify({ contentType }),
+    }),
+    updateProfile: (avatarUrl: string) => request<ApiResponse<unknown>>('/users/me', {
+        method: 'PUT',
+        body: JSON.stringify({ avatarUrl }),
+    }),
+    getMe: () => request<ApiResponse<{ pk: string; sk: string; email: string; username: string; role: string; avatarUrl?: string; createdAt: string }>>('/users/me'),
+};
+
+export const uploadToS3 = async (uploadUrl: string, file: File): Promise<void> => {
+    const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+            'Content-Type': file.type,
+        },
+    });
+    
+    if (!response.ok) {
+        const text = await response.text();
+        console.error('S3 Upload Error:', response.status, text);
+        throw new Error(`Upload failed: ${response.status}`);
+    }
 };
 
 export const commentApi = {

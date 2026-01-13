@@ -19,6 +19,7 @@ export interface Post {
     status: string;
     authorId: string;
     authorName: string;
+    thumbnailUrl?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -30,18 +31,21 @@ export interface Comment {
     content: string;
     authorId: string;
     authorName: string;
+    authorAvatar?: string;
     createdAt: string;
 }
 
 export interface CreatePostRequest {
     title: string;
     content: string;
+    thumbnailUrl?: string;
 }
 
 export interface UpdatePostRequest {
     title?: string;
     content?: string;
     status?: string;
+    thumbnailUrl?: string;
 }
 
 export interface CreateCommentRequest {

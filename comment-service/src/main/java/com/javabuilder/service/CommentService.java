@@ -4,6 +4,7 @@ import com.javabuilder.dto.CreateCommentRequest;
 import com.javabuilder.dto.PageResponse;
 import com.javabuilder.dto.UpdateCommentRequest;
 import com.javabuilder.entity.Comment;
+import com.javabuilder.entity.Profile;
 import com.javabuilder.event.NotificationEvent;
 import com.javabuilder.exception.ResourceNotFoundException;
 import com.javabuilder.repository.CommentRepository;
@@ -28,6 +29,10 @@ public class CommentService {
         String commentId = UUID.randomUUID().toString();
         String postPk = request.getPostId().startsWith("POST#") ? request.getPostId() : "POST#" + request.getPostId();
 
+        String authorAvatar = profileRepository.findByUserId(authorId)
+                .map(Profile::getAvatarUrl)
+                .orElse(null);
+
         Comment comment = Comment.builder()
                 .pk(postPk)
                 .sk("COMMENT#" + commentId)
@@ -35,6 +40,7 @@ public class CommentService {
                 .content(request.getContent())
                 .authorId(authorId)
                 .authorName(authorName)
+                .authorAvatar(authorAvatar)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();

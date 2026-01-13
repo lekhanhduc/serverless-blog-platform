@@ -19,6 +19,7 @@ public class Profile {
     private String email;
     private String username;
     private String role;
+    private String avatarUrl;
     private Instant createdAt;
 
     @DynamoDbPartitionKey

@@ -1,32 +1,88 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { postApi } from '../services/api';
+import { postApi, userApi, uploadToS3 } from '../services/api';
+import { Toast } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import type { Post } from '../types';
 
 export const ProfilePage: React.FC = () => {
     const { user, loading: authLoading, logout } = useAuth();
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [profileEmail, setProfileEmail] = useState<string>('');
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+    const { toast, showToast, hideToast } = useToast();
 
     useEffect(() => { 
         if (!authLoading && !user) navigate('/login');
-        if (user) loadPosts();
+        if (user) {
+            loadProfile();
+            loadPosts();
+        }
     }, [user, authLoading]);
+
+    const loadProfile = async () => {
+        try {
+            const { data } = await userApi.getMe();
+            if (data.avatarUrl) setAvatarUrl(data.avatarUrl);
+            if (data.email) setProfileEmail(data.email);
+        } catch { }
+    };
 
     const loadPosts = async () => {
         try { const r = await postApi.getMyPosts(); setPosts(r.data.result); }
         catch { } finally { setLoading(false); }
     };
 
+    const handleAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showToast('Vui lòng chọn file ảnh', 'error');
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('Ảnh không được vượt quá 10MB', 'error');
+            return;
+        }
+
+        setUploadingAvatar(true);
+        try {
+            // Preview ngay
+            setAvatarUrl(URL.createObjectURL(file));
+            
+            // Upload lên S3
+            const { data } = await userApi.getUploadUrl(file.type);
+            await uploadToS3(data.uploadUrl, file);
+            
+            // Lưu avatarUrl vào profile
+            await userApi.updateProfile(data.fileUrl);
+            setAvatarUrl(data.fileUrl);
+            
+            showToast('Cập nhật avatar thành công!', 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Có lỗi xảy ra, vui lòng thử lại', 'error');
+            setAvatarUrl(null);
+        } finally {
+            setUploadingAvatar(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
     if (authLoading || !user) return null;
 
     const displayName = user.name || user.signInDetails?.loginId?.split('@')[0] || 'User';
-    const email = user.signInDetails?.loginId || '';
+    const email = profileEmail || user.signInDetails?.loginId || '';
 
     return (
         <div>
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
             {/* Header */}
             <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900">Trang cá nhân</h1>
@@ -36,15 +92,47 @@ export const ProfilePage: React.FC = () => {
             {/* Profile Card */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5 text-center sm:text-left">
-                    {/* Avatar */}
-                    <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-3xl font-bold shrink-0">
-                        {displayName[0]?.toUpperCase()}
+                    {/* Avatar with upload */}
+                    <div className="relative group">
+                        {avatarUrl ? (
+                            <img 
+                                src={avatarUrl} 
+                                alt="Avatar" 
+                                className="w-20 h-20 rounded-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                                {displayName[0]?.toUpperCase()}
+                            </div>
+                        )}
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingAvatar}
+                            className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                            {uploadingAvatar ? (
+                                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            )}
+                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarSelect}
+                            className="hidden"
+                        />
                     </div>
                     
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                         <h2 className="text-xl font-bold text-gray-900 truncate">{displayName}</h2>
                         <p className="text-gray-500 truncate">{email}</p>
+                        <p className="text-xs text-gray-400 mt-1">Hover vào avatar để thay đổi</p>
                     </div>
                 </div>
 

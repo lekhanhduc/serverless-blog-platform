@@ -5,6 +5,7 @@ import { postApi, commentApi } from '../services/api';
 import type { Post, Comment } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/helpers';
+import { Modal } from '../components/Modal';
 
 export const PostDetailPage: React.FC = () => {
     const { postId } = useParams<{ postId: string }>();
@@ -14,6 +15,8 @@ export const PostDetailPage: React.FC = () => {
     const [commentsLoading, setCommentsLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [deleteModal, setDeleteModal] = useState<{ open: boolean; sk: string | null }>({ open: false, sk: null });
+    const [deleting, setDeleting] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -47,9 +50,16 @@ export const PostDetailPage: React.FC = () => {
         catch { } finally { setSubmitting(false); }
     };
 
-    const deleteComment = async (sk: string) => {
-        if (!confirm('Xóa bình luận này?')) return;
-        try { await commentApi.delete(postId!, sk.replace('COMMENT#', '')); loadComments(); } catch { }
+    const deleteComment = async () => {
+        if (!deleteModal.sk) return;
+        setDeleting(true);
+        try { 
+            await commentApi.delete(postId!, deleteModal.sk.replace('COMMENT#', '')); 
+            loadComments(); 
+        } catch { } finally { 
+            setDeleting(false);
+            setDeleteModal({ open: false, sk: null });
+        }
     };
 
     const timeAgo = (date: string) => {
@@ -91,21 +101,28 @@ export const PostDetailPage: React.FC = () => {
             </button>
 
             {/* Post */}
-            <article className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-                        {post.authorName[0].toUpperCase()}
+            <article className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
+                {/* Thumbnail */}
+                {post.thumbnailUrl && (
+                    <img src={post.thumbnailUrl} alt={post.title} className="w-full h-64 object-contain bg-gray-100" />
+                )}
+                
+                <div className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
+                            {post.authorName[0].toUpperCase()}
+                        </div>
+                        <div>
+                            <p className="font-medium text-gray-900">{post.authorName}</p>
+                            <p className="text-sm text-gray-500">{formatDate(post.createdAt, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="font-medium text-gray-900">{post.authorName}</p>
-                        <p className="text-sm text-gray-500">{formatDate(post.createdAt, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">{post.title}</h1>
+
+                    <div className="prose">
+                        <ReactMarkdown>{post.content}</ReactMarkdown>
                     </div>
-                </div>
-
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">{post.title}</h1>
-
-                <div className="prose">
-                    <ReactMarkdown>{post.content}</ReactMarkdown>
                 </div>
             </article>
 
@@ -156,16 +173,20 @@ export const PostDetailPage: React.FC = () => {
                     <div className="space-y-3">
                         {comments.map((c) => (
                             <div key={c.sk} className="group flex gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                                <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
-                                    {c.authorName[0].toUpperCase()}
-                                </div>
+                                {c.authorAvatar ? (
+                                    <img src={c.authorAvatar} alt={c.authorName} className="w-9 h-9 rounded-full object-cover shrink-0" />
+                                ) : (
+                                    <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0">
+                                        {c.authorName[0].toUpperCase()}
+                                    </div>
+                                )}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <span className="font-medium text-sm text-gray-900">{c.authorName}</span>
                                         <span className="text-xs text-gray-400">{timeAgo(c.createdAt)}</span>
                                         {user?.username === c.authorId && (
                                             <button 
-                                                onClick={() => deleteComment(c.sk)} 
+                                                onClick={() => setDeleteModal({ open: true, sk: c.sk })} 
                                                 className="ml-auto text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                                             >
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,6 +202,16 @@ export const PostDetailPage: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <Modal
+                isOpen={deleteModal.open}
+                onClose={() => setDeleteModal({ open: false, sk: null })}
+                onConfirm={deleteComment}
+                title="Xóa bình luận"
+                message="Bạn có chắc muốn xóa bình luận này?"
+                confirmText="Xóa"
+                loading={deleting}
+            />
         </div>
     );
 };

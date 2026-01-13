@@ -25,6 +25,7 @@ public class Post {
     private String authorId;
     private String authorName;
     private String authorAvatar;
+    private String thumbnailUrl;
 
     @DynamoDbPartitionKey
     public String getPk() {

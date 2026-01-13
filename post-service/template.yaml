@@ -32,11 +32,15 @@ Resources:
           ENVIRONMENT: prod
           DYNAMODB_TABLE_NAME: serverless-blog
           SNS_TOPIC_ARN: arn:aws:sns:ap-southeast-1:654512229990:notification
+          S3_BUCKET_NAME: serverless-blog-media
+          S3_REGION: ap-southeast-1
       Policies:
         - DynamoDBCrudPolicy:
             TableName: serverless-blog
         - SNSPublishMessagePolicy:
             TopicName: notification
+        - S3CrudPolicy:
+            BucketName: serverless-blog-media
       Events:
         GetPosts:
           Type: HttpApi
@@ -74,6 +78,12 @@ Resources:
             ApiId: !Ref PostServiceApi
             Path: /posts/me
             Method: GET
+        GetUploadUrl:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PostServiceApi
+            Path: /posts/upload-url
+            Method: POST
 
 Outputs:
   ApiUrl:

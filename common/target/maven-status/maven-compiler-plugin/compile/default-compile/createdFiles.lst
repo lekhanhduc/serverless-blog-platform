@@ -1,9 +1,13 @@
+com\javabuilder\dto\UploadUrlResponse.class
 com\javabuilder\dto\PageResponse$PageResponseBuilder.class
 com\javabuilder\configuration\DynamoDbConfiguration.class
 com\javabuilder\dto\ApiResponse$ApiResponseBuilder.class
 com\javabuilder\entity\Post$PostBuilder.class
 com\javabuilder\service\SnsPublisher.class
+com\javabuilder\configuration\S3Configuration.class
+com\javabuilder\dto\UploadUrlRequest.class
 com\javabuilder\event\NotificationEvent$NotificationEventBuilder.class
+com\javabuilder\service\S3Service.class
 com\javabuilder\entity\Profile.class
 com\javabuilder\event\NotificationEvent.class
 com\javabuilder\entity\Profile$ProfileBuilder.class
@@ -12,4 +16,5 @@ com\javabuilder\dto\PageResponse.class
 com\javabuilder\entity\Comment$CommentBuilder.class
 com\javabuilder\entity\Comment.class
 com\javabuilder\dto\ApiResponse.class
+com\javabuilder\dto\UploadUrlResponse$UploadUrlResponseBuilder.class
 com\javabuilder\entity\Post.class

@@ -27,14 +27,20 @@ public class PostService {
     public Post createPost(CreatePostRequest request, String authorId, String authorName) {
         String postId = UUID.randomUUID().toString();
 
+        String authorAvatar = profileRepository.findByUserId(authorId)
+                .map(profile -> profile.getAvatarUrl())
+                .orElse(null);
+
         Post post = Post.builder()
                 .pk("POST#" + postId)
                 .sk("METADATA")
                 .title(request.getTitle())
                 .content(request.getContent())
+                .thumbnailUrl(request.getThumbnailUrl())
                 .status("DRAFT")
                 .authorId(authorId)
                 .authorName(authorName)
+                .authorAvatar(authorAvatar)
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
@@ -80,6 +86,9 @@ public class PostService {
         }
         if (request.getStatus() != null) {
             post.setStatus(request.getStatus());
+        }
+        if (request.getThumbnailUrl() != null) {
+            post.setThumbnailUrl(request.getThumbnailUrl());
         }
         post.setUpdatedAt(Instant.now());
 

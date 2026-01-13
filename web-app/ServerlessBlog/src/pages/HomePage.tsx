@@ -65,40 +65,47 @@ export const HomePage: React.FC = () => {
                     {posts.map((post, index) => (
                         <article 
                             key={post.pk} 
-                            className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all animate-fadeIn"
+                            className="bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer hover:border-primary/30 hover:shadow-sm transition-all animate-fadeIn"
                             style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
                             onClick={() => navigate(`/posts/${extractPostId(post.pk)}`)}
                         >
-                            <div className="flex gap-4">
-                                {/* Avatar */}
-                                <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold shrink-0">
-                                    {post.authorName[0].toUpperCase()}
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                                        <span className="font-medium text-gray-900">{post.authorName}</span>
-                                        <span>·</span>
-                                        <span>{timeAgo(post.createdAt)}</span>
+                            {/* Thumbnail */}
+                            {post.thumbnailUrl && (
+                                <img src={post.thumbnailUrl} alt={post.title} className="w-full h-48 object-contain bg-gray-100" />
+                            )}
+                            
+                            <div className="p-5">
+                                <div className="flex gap-4">
+                                    {/* Avatar */}
+                                    <div className="w-11 h-11 bg-primary rounded-full flex items-center justify-center text-white font-semibold shrink-0">
+                                        {post.authorName[0].toUpperCase()}
                                     </div>
 
-                                    <h2 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
-                                        {post.title}
-                                    </h2>
+                                    {/* Content */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                                            <span className="font-medium text-gray-900">{post.authorName}</span>
+                                            <span>·</span>
+                                            <span>{timeAgo(post.createdAt)}</span>
+                                        </div>
 
-                                    <p className="text-gray-500 text-sm line-clamp-2">
-                                        {stripMarkdown(post.content)}
-                                    </p>
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition-colors">
+                                            {post.title}
+                                        </h2>
 
-                                    {/* Footer */}
-                                    <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
-                                        <span className="flex items-center gap-1">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            5 phút đọc
-                                        </span>
+                                        <p className="text-gray-500 text-sm line-clamp-2">
+                                            {stripMarkdown(post.content)}
+                                        </p>
+
+                                        {/* Footer */}
+                                        <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
+                                            <span className="flex items-center gap-1">
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                5 phút đọc
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
