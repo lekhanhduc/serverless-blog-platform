@@ -4,7 +4,7 @@ Nền tảng blog hiện đại được xây dựng hoàn toàn trên kiến tr
 
 ## 🏗️ Architecture
 
-![Architecture](infrastructure/serverless.drawio.png)
+![Architecture](infrastructure/serverless.png)
 
 ## ✨ Features
 
