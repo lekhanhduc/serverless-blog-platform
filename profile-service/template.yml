@@ -23,12 +23,16 @@ Resources:
           COGNITO_USER_POOL_ID: ap-southeast-1_jMBPJWN1Z
           COGNITO_CLIENT_ID: 5b8le403j2lhb2mgdsi99c79mj
           SNS_TOPIC_ARN: arn:aws:sns:ap-southeast-1:654512229990:notification
+          S3_BUCKET_NAME: serverless-blog-media
+          S3_REGION: ap-southeast-1
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: serverless-blog
         - SNSPublishMessagePolicy:
             TopicName: notification
+        - S3CrudPolicy:
+            BucketName: serverless-blog-media
         - Statement:
             - Effect: Allow
               Action:

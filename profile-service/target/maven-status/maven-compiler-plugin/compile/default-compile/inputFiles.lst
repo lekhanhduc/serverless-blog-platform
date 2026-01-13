@@ -8,6 +8,7 @@ D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\contro
 D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\dto\CreateUserRequest.java
 D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\dto\LoginRequest.java
 D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\dto\LoginResponse.java
+D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\dto\UpdateProfileRequest.java
 D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\exception\GlobalExceptionHandler.java
 D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\exception\ResourceNotFoundException.java
 D:\AWS Serverless Java Blog\profile-service\src\main\java\com\javabuilder\repository\ProfileRepository.java

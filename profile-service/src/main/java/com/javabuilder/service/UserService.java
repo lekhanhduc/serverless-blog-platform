@@ -2,6 +2,7 @@ package com.javabuilder.service;
 
 import com.javabuilder.dto.CreateUserRequest;
 import com.javabuilder.dto.PageResponse;
+import com.javabuilder.dto.UpdateProfileRequest;
 import com.javabuilder.entity.Profile;
 import com.javabuilder.event.NotificationEvent;
 import com.javabuilder.exception.ResourceNotFoundException;
@@ -12,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
-
 import java.time.Instant;
 import java.util.Optional;
 
@@ -72,22 +72,34 @@ public class UserService {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    public void deleteUser(String userId) {
+    public void deleteUser(String username) {
         cognitoClient.adminDeleteUser(AdminDeleteUserRequest.builder()
                 .userPoolId(userPoolId)
-                .username(userId)
+                .username(username)
                 .build());
 
-        profileRepository.delete(userId);
+        profileRepository.delete(username);
     }
 
-    public Optional<Profile> getUserById(String userId) {
-        return profileRepository.findByUserId(userId);
+    public Optional<Profile> getUserByUsername(String username) {
+        return profileRepository.findByUserId(username);
     }
 
-    public Profile me(String userId) {
-        return profileRepository.findByUserId(userId)
+    public Profile me(String username) {
+        return profileRepository.findByUserId(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    public Profile updateProfile(String username, UpdateProfileRequest request) {
+        Profile profile = profileRepository.findByUserId(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        if (request.getAvatarUrl() != null) {
+            profile.setAvatarUrl(request.getAvatarUrl());
+        }
+        
+        profileRepository.save(profile);
+        return profile;
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
